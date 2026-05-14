@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react"
 import Navbar from "../components/Navbar"
 import { ArrowUp, Search, Telescope } from "lucide-react";
 import TypingIndicator from "../components/Loader";
+import MessageBubble from "../components/MessagesArea";
+import generateUniqueUserId from "@/helpers/uniqueId";
+import axios from "axios";
 
 
 const SUGGESTIONS = [
@@ -14,14 +17,23 @@ const SUGGESTIONS = [
 ]
 
 
+// TODO: Test this api calling and remove the bugs found.
+
 export default function ChatPage(){
     const [newChat, setNewChat] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [messages, setMessages] = useState([]);
+    const [userId, setUserId] = useState("");
+    const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState("");
 
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+
+    useEffect(() => {
+        const id = generateUniqueUserId();
+        setUserId(id);
+    }, [])
     
 
     useEffect(() => {
@@ -34,8 +46,51 @@ export default function ChatPage(){
         inputRef.current?.focus();
     }
 
-    const handleSend = () => {
+    const handleSend = async() => {
+        try{
+            const text = input.trim();
+            if(!text || loading){
+                console.log("Please enter a valid message")
+                return ;
+            }
 
+            const userMsg = {
+                role: "user",
+                content: text
+            }
+
+            setLoading(true);
+            setNewChat(false);
+            setMessages((prev) => [...prev, userMsg]);
+            setInput("");
+
+            const res = await axios.post("http://localhost:5000/ask", {
+                user_id: userId,
+                query: text
+            })
+            console.log("RESPONSE IS: ", res);
+
+            if(!res.data?.success){
+                alert("Server is down right now. Sorry for your loss.")
+				setMessages((prev) => prev.slice(0, -1));
+				return ;
+            }
+
+            const result = {
+                ...res.data?.data,
+                role: "bot"
+            }
+
+            setMessages((prev) => [...prev, result]);
+
+        }
+        catch(error){
+            console.log("Something went while getting response");
+            console.log("Internal server error: ", error);
+        }
+        finally{
+            setLoading(false);
+        }
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -95,8 +150,7 @@ export default function ChatPage(){
                         <div className="pb-[120px] pt-7">
                             {
                                 messages.map((msg, i) => (
-                                    // <MessageBubble key={i} msg={msg} />
-                                    msg
+                                    <MessageBubble key={i} message={msg} />
                                 ))
                             }
 
@@ -128,6 +182,7 @@ export default function ChatPage(){
                             onKeyDown={handleKeyDown}
                             placeholder="Ask DeepScout anything…"
                             rows={1}
+                            disabled={loading}
                             className="max-h-[120px] flex-1 resize-none overflow-y-auto bg-transparent py-1 text-[14px] leading-[1.65] 
                                 text-[#c5ddd7] caret-emerald-500 outline-none placeholder:text-[#2a4a42]"
                         />
