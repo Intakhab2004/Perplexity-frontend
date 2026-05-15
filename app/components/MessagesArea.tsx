@@ -12,6 +12,12 @@ interface Message {
     }[]
 }
 
+interface GroupedSources {
+    ids: number[],
+    title: string,
+    url: string
+}
+
 export default function MessageBubble({message}: {message: Message} ){
     const [copied, setCopied] = useState(false);
 
@@ -20,6 +26,25 @@ export default function MessageBubble({message}: {message: Message} ){
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
     }
+
+    // Grouping duplicates sources from the sources array
+    const groupedSources: GroupedSources[] = [];
+    message.sources?.forEach((source) => {
+        const existing = groupedSources.find(
+            (s) => s.title === source.title && s.url === source.url
+        );
+
+        if(existing){
+            existing.ids.push(source.id);
+        }
+        else{
+            groupedSources.push({
+                ids: [source.id],
+                title: source.title,
+                url: source.url
+            })
+        }
+    })
 
     if(message.role === "user"){
         return (
@@ -53,7 +78,7 @@ export default function MessageBubble({message}: {message: Message} ){
 
                 {/* Citations */}
                 {
-                    message?.sources && (
+                    groupedSources && (
                         <div className="border-t border-emerald-500/10 pt-4">
                             <div className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#2a4a42]">
                                 Sources
@@ -61,14 +86,16 @@ export default function MessageBubble({message}: {message: Message} ){
 
                             <div className="flex flex-col gap-1.5">
                             {
-                                message.sources.map((s) => (
+                                groupedSources.map((s, idx) => (
                                     <div
-                                        key={s.id}
+                                        key={idx}
                                         className="flex items-start gap-2.5 rounded-lg border border-emerald-500/10 bg-[rgba(5,10,10,0.6)] px-2.5 py-2"
                                     >
                                         <div className="mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded bg-emerald-500/10">
                                             <span className="text-[9px] font-bold text-emerald-500">
-                                                {s.id}
+                                                {
+                                                    s.ids.map((id) => `[${id}]`).join("")
+                                                }
                                             </span>
                                         </div>
                                         <div className="flex-1">

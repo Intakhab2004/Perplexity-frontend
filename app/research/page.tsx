@@ -73,6 +73,7 @@ export default function ChatPage(){
             if(!res.data?.success){
                 alert("Server is down right now. Sorry for your loss.")
 				setMessages((prev) => prev.slice(0, -1));
+                setNewChat(true);
 				return ;
             }
 
