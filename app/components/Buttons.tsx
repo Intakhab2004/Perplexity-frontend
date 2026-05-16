@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 
 
@@ -20,8 +21,11 @@ export function ButtonVariant1({text, style}: propType){
 
 
 export function ButtonVariant2({text, style}: propType){
+    const router = useRouter();
+
     return (
-        <button 
+        <button
+            onClick={() => router.push("/research")} 
             className={`${style} inline-flex items-center gap-2 bg-gradient-to-br from-emerald-600 to-teal-600 text-white 
                 font-semibold rounded-[10px] border-0 cursor-pointer no-underline shadow-[0_0_20px_rgba(16,185,129,0.25)]`}
         >
