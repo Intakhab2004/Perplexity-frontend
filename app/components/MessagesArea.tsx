@@ -91,10 +91,10 @@ export default function MessageBubble({message}: {message: Message} ){
                                         key={idx}
                                         className="flex items-start gap-2.5 rounded-lg border border-emerald-500/10 bg-[rgba(5,10,10,0.6)] px-2.5 py-2"
                                     >
-                                        <div className="mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded bg-emerald-500/10">
+                                        <div className="mt-0.5 flex py-0.5 px-1 flex-shrink-0 items-center justify-center rounded bg-emerald-500/10">
                                             <span className="text-[9px] font-bold text-emerald-500">
                                                 {
-                                                    s.ids.map((id) => `[${id}]`).join("")
+                                                    `[${s.ids.map((id) => id).join(",")}]`
                                                 }
                                             </span>
                                         </div>

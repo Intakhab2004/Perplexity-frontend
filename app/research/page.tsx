@@ -83,6 +83,7 @@ export default function ChatPage(){
             }
 
             setMessages((prev) => [...prev, result]);
+            console.log("MESSAGE: ", messages);
 
         }
         catch(error){
